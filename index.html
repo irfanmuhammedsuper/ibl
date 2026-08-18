@@ -525,6 +525,71 @@ border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-
   .ibl-panel__content{margin-left:0}
   .ibl-hero__animation{display:none}
   .ibl-product-detail__grid{grid-template-columns:1fr}
+
+  /* ADMIN MOBILE SIDEBAR
+     Keep merchant/mobile navigation unchanged. Only the admin sidebar
+     becomes a horizontally scrollable fixed navigation on small screens. */
+  .ibl-panel__sidebar.ibl-admin-sidebar-mobile{
+    display:block;
+    position:fixed;
+    top:var(--header-h);
+    left:0;
+    right:0;
+    bottom:auto;
+    width:100%;
+    height:auto;
+    max-height:calc(100vh - var(--header-h));
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    padding:8px 10px;
+    border-right:none;
+    border-bottom:1px solid var(--c-border);
+    box-shadow:0 4px 16px rgba(0,0,0,.08);
+    z-index:60;
+    background:rgba(255,255,255,.97);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  }
+  .ibl-panel__sidebar.ibl-admin-sidebar-mobile > div:first-child{
+    display:inline-flex;
+    align-items:center;
+    padding:8px 12px !important;
+    margin-right:4px;
+  }
+  .ibl-panel__sidebar.ibl-admin-sidebar-mobile .ibl-panel__sidebar-item{
+    display:inline-flex;
+    width:auto;
+    padding:9px 13px;
+    margin:0 3px;
+    border:1px solid var(--c-border);
+    border-radius:var(--radius-full);
+    gap:7px;
+    background:var(--c-white);
+    vertical-align:middle;
+  }
+  .ibl-panel__sidebar.ibl-admin-sidebar-mobile .ibl-panel__sidebar-item--active{
+    border-color:var(--c-primary);
+    background:rgba(255,122,0,.08);
+  }
+  .ibl-panel__sidebar.ibl-admin-sidebar-mobile::-webkit-scrollbar{
+    height:4px;
+  }
+  .ibl-panel__sidebar.ibl-admin-sidebar-mobile::-webkit-scrollbar-thumb{
+    background:rgba(255,122,0,.35);
+    border-radius:4px;
+  }
+}
+
+@media(max-width:768px){
+  .ibl-panel__sidebar.ibl-admin-sidebar-mobile{
+    display:flex;
+    align-items:center;
+    gap:2px;
+  }
+  .ibl-panel__content{
+    padding-top:70px;
+  }
 }
 @media(max-width:768px){
   .ibl-bottom-nav{display:block}
@@ -2534,10 +2599,10 @@ function adminSidebar(active) {
     { id: 'admin/coupons', icon: 'fa-ticket', label: 'Coupons' },
     { id: 'admin/reports', icon: 'fa-chart-bar', label: 'Reports' },
   ];
-  return `<div class="ibl-panel__sidebar">
+  return `<div class="ibl-panel__sidebar ibl-admin-sidebar-mobile">
     <div style="padding:12px 20px 16px;font-family:var(--font-heading);font-weight:700;font-size:1.1rem;color:var(--c-secondary)"><i class="fas fa-shield-halved"></i> Admin</div>
     ${items.map(it => `<div class="ibl-panel__sidebar-item ${active === it.id ? 'ibl-panel__sidebar-item--active' : ''}" onclick="navigateTo('#/${it.id}')"><i class="fas ${it.icon}"></i>${it.label}</div>`).join('')}
-    <div class="ibl-panel__sidebar-item" onclick="navigateTo('#/account')"><i class="fas fa-user"></i>Account</div>
+    <div class="ibl-panel__sidebar-item ${active === 'account' ? 'ibl-panel__sidebar-item--active' : ''}" onclick="navigateTo('#/account')"><i class="fas fa-user"></i>Account</div>
   </div>`;
 }
 
