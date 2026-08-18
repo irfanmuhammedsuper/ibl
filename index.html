@@ -2518,6 +2518,46 @@ function merchantMobileNav(active) {
   </div></div>`;
 }
 
+// =====================================================================
+// IBL FRONTEND — ADMIN PAGES
+// =====================================================================
+
+function adminSidebar(active) {
+  const items = [
+    { id: 'admin', icon: 'fa-chart-line', label: 'Dashboard' },
+    { id: 'admin/users', icon: 'fa-users', label: 'Customers' },
+    { id: 'admin/merchants', icon: 'fa-user-tie', label: 'Merchants' },
+    { id: 'admin/shops', icon: 'fa-store', label: 'Shops' },
+    { id: 'admin/products', icon: 'fa-tags', label: 'Products' },
+    { id: 'admin/orders', icon: 'fa-box', label: 'Orders' },
+    { id: 'admin/categories', icon: 'fa-list', label: 'Categories' },
+    { id: 'admin/coupons', icon: 'fa-ticket', label: 'Coupons' },
+    { id: 'admin/reports', icon: 'fa-chart-bar', label: 'Reports' },
+  ];
+  return `<div class="ibl-panel__sidebar">
+    <div style="padding:12px 20px 16px;font-family:var(--font-heading);font-weight:700;font-size:1.1rem;color:var(--c-secondary)"><i class="fas fa-shield-halved"></i> Admin</div>
+    ${items.map(it => `<div class="ibl-panel__sidebar-item ${active === it.id ? 'ibl-panel__sidebar-item--active' : ''}" onclick="navigateTo('#/${it.id}')"><i class="fas ${it.icon}"></i>${it.label}</div>`).join('')}
+    <div class="ibl-panel__sidebar-item" onclick="navigateTo('#/account')"><i class="fas fa-user"></i>Account</div>
+  </div>`;
+}
+
+// FIX: admin pages previously had no mobile bottom-nav equivalent (unlike merchant
+// pages, which render merchantMobileNav()). Since .ibl-panel__sidebar is hidden by
+// CSS under 1024px, admin users on mobile had no way to navigate between admin
+// sections at all. This mirrors merchantMobileNav() for the admin role.
+function adminMobileNav(active) {
+  const items = [
+    { id: 'admin', icon: 'fa-chart-line', label: 'Home' },
+    { id: 'admin/orders', icon: 'fa-box', label: 'Orders' },
+    { id: 'admin/shops', icon: 'fa-store', label: 'Shops' },
+    { id: 'admin/merchants', icon: 'fa-user-tie', label: 'Sellers' },
+    { id: 'admin/products', icon: 'fa-tags', label: 'Products' },
+  ];
+  return `<div class="ibl-merchant-mobile-nav"><div class="ibl-merchant-mobile-nav__inner" style="display:flex;align-items:center;justify-content:space-around;height:100%">
+    ${items.map(it => `<div class="ibl-bottom-nav__item ${active === it.id ? 'ibl-bottom-nav__item--active' : ''}" onclick="navigateTo('#/${it.id}')"><i class="fas ${it.icon}"></i><span>${it.label}</span></div>`).join('')}
+  </div></div>`;
+}
+
 // ── MERCHANT DASHBOARD ──
 async function renderMerchantDashboard() {
   const mc = document.getElementById('main-content');
@@ -2919,33 +2959,10 @@ async function toggleShopStatusAction() {
   else showToast(res.message, 'error');
 }
 
-// =====================================================================
-// IBL FRONTEND — ADMIN PAGES
-// =====================================================================
-
-function adminSidebar(active) {
-  const items = [
-    { id: 'admin', icon: 'fa-chart-line', label: 'Dashboard' },
-    { id: 'admin/users', icon: 'fa-users', label: 'Customers' },
-    { id: 'admin/merchants', icon: 'fa-user-tie', label: 'Merchants' },
-    { id: 'admin/shops', icon: 'fa-store', label: 'Shops' },
-    { id: 'admin/products', icon: 'fa-tags', label: 'Products' },
-    { id: 'admin/orders', icon: 'fa-box', label: 'Orders' },
-    { id: 'admin/categories', icon: 'fa-list', label: 'Categories' },
-    { id: 'admin/coupons', icon: 'fa-ticket', label: 'Coupons' },
-    { id: 'admin/reports', icon: 'fa-chart-bar', label: 'Reports' },
-  ];
-  return `<div class="ibl-panel__sidebar">
-    <div style="padding:12px 20px 16px;font-family:var(--font-heading);font-weight:700;font-size:1.1rem;color:var(--c-secondary)"><i class="fas fa-shield-halved"></i> Admin</div>
-    ${items.map(it => `<div class="ibl-panel__sidebar-item ${active === it.id ? 'ibl-panel__sidebar-item--active' : ''}" onclick="navigateTo('#/${it.id}')"><i class="fas ${it.icon}"></i>${it.label}</div>`).join('')}
-    <div class="ibl-panel__sidebar-item" onclick="navigateTo('#/account')"><i class="fas fa-user"></i>Account</div>
-  </div>`;
-}
-
 // ── ADMIN DASHBOARD ──
 async function renderAdminDashboard() {
   const mc = document.getElementById('main-content');
-  mc.innerHTML = `${adminSidebar('admin')}<div class="ibl-panel__content">${renderSkeleton('cards')}</div>`;
+  mc.innerHTML = `${adminSidebar('admin')}<div class="ibl-panel__content">${renderSkeleton('cards')}</div>${adminMobileNav('admin')}`;
   const res = await API.get('getAdminDashboard');
   const content = mc.querySelector('.ibl-panel__content');
   if (!res.success) { content.innerHTML = `<p class="text-muted">${escapeHtml(res.message)}</p>`; return; }
@@ -2977,7 +2994,7 @@ async function renderAdminUsers() {
     <h2 class="ibl-panel__page-title">Customers</h2>
     <div class="flex gap-8 mb-16"><input id="admin-user-search" placeholder="Search by name, email, phone..." style="max-width:360px" onkeydown="if(event.key==='Enter')searchAdminUsers()">
     <button class="ibl-btn ibl-btn--primary ibl-btn--sm" onclick="searchAdminUsers()"><i class="fas fa-search"></i></button></div>
-    <div id="admin-users-list">${renderSkeleton('loading')}</div></div>`;
+    <div id="admin-users-list">${renderSkeleton('loading')}</div></div>${adminMobileNav('admin/users')}`;
   searchAdminUsers();
 }
 
@@ -3016,7 +3033,7 @@ async function renderAdminMerchants() {
       <div class="ibl-filter-chip" onclick="loadAdminMerchants('rejected')">Rejected</div>
       <div class="ibl-filter-chip" onclick="loadAdminMerchants('suspended')">Suspended</div>
     </div>
-    <div id="admin-merchants-list">${renderSkeleton('loading')}</div></div>`;
+    <div id="admin-merchants-list">${renderSkeleton('loading')}</div></div>${adminMobileNav('admin/merchants')}`;
   loadAdminMerchants('');
 }
 
@@ -3056,7 +3073,7 @@ async function renderAdminShops() {
       <div class="ibl-filter-chip" onclick="loadAdminShops('pending')">Pending</div>
       <div class="ibl-filter-chip" onclick="loadAdminShops('approved')">Approved</div>
     </div>
-    <div id="admin-shops-list">${renderSkeleton('loading')}</div></div>`;
+    <div id="admin-shops-list">${renderSkeleton('loading')}</div></div>${adminMobileNav('admin/shops')}`;
   loadAdminShops('');
 }
 
@@ -3091,7 +3108,7 @@ async function setShopApproval(shopId, approved) {
 async function renderAdminProducts() {
   const mc = document.getElementById('main-content');
   mc.innerHTML = `${adminSidebar('admin/products')}<div class="ibl-panel__content">
-    <h2 class="ibl-panel__page-title">All Products</h2><div id="admin-products-list">${renderSkeleton('loading')}</div></div>`;
+    <h2 class="ibl-panel__page-title">All Products</h2><div id="admin-products-list">${renderSkeleton('loading')}</div></div>${adminMobileNav('admin/products')}`;
   const res = await API.get('adminListProducts');
   const el = document.getElementById('admin-products-list');
   if (!res.success || !res.data.products.length) { el.innerHTML = '<p class="text-muted">No products.</p>'; return; }
@@ -3111,7 +3128,7 @@ async function renderAdminOrders() {
     <h2 class="ibl-panel__page-title">All Orders</h2>
     <div class="flex gap-8 mb-16"><input id="admin-order-search" placeholder="Search order ID..." style="max-width:280px" onkeydown="if(event.key==='Enter')loadAdminOrders()">
     <button class="ibl-btn ibl-btn--primary ibl-btn--sm" onclick="loadAdminOrders()"><i class="fas fa-search"></i></button></div>
-    <div id="admin-orders-list">${renderSkeleton('loading')}</div></div>`;
+    <div id="admin-orders-list">${renderSkeleton('loading')}</div></div>${adminMobileNav('admin/orders')}`;
   loadAdminOrders();
 }
 
@@ -3139,7 +3156,7 @@ async function renderAdminCategories() {
   mc.innerHTML = `${adminSidebar('admin/categories')}<div class="ibl-panel__content">
     <div class="flex justify-between items-center mb-16"><h2 class="ibl-panel__page-title" style="margin:0">Categories</h2>
     <button class="ibl-btn ibl-btn--primary ibl-btn--sm" onclick="showAddCategoryModal()"><i class="fas fa-plus"></i> Add Category</button></div>
-    <div id="admin-cats-list">${renderSkeleton('loading')}</div></div>`;
+    <div id="admin-cats-list">${renderSkeleton('loading')}</div></div>${adminMobileNav('admin/categories')}`;
   const res = await API.get('getCategories');
   const el = document.getElementById('admin-cats-list');
   if (!res.success || !res.data.categories.length) { el.innerHTML = '<p class="text-muted">No categories.</p>'; return; }
@@ -3182,7 +3199,7 @@ async function renderAdminCoupons() {
   mc.innerHTML = `${adminSidebar('admin/coupons')}<div class="ibl-panel__content">
     <div class="flex justify-between items-center mb-16"><h2 class="ibl-panel__page-title" style="margin:0">Coupons</h2>
     <button class="ibl-btn ibl-btn--primary ibl-btn--sm" onclick="showAddCouponModal()"><i class="fas fa-plus"></i> Add Coupon</button></div>
-    <div id="admin-coupons-list">${renderSkeleton('loading')}</div></div>`;
+    <div id="admin-coupons-list">${renderSkeleton('loading')}</div></div>${adminMobileNav('admin/coupons')}`;
   const res = await API.get('adminListCoupons');
   const el = document.getElementById('admin-coupons-list');
   if (!res.success || !res.data.coupons.length) { el.innerHTML = '<p class="text-muted">No coupons.</p>'; return; }
@@ -3260,7 +3277,7 @@ async function deleteCoupon(couponId) {
 async function renderAdminReports() {
   const mc = document.getElementById('main-content');
   mc.innerHTML = `${adminSidebar('admin/reports')}<div class="ibl-panel__content">
-    <h2 class="ibl-panel__page-title">Reports</h2>${renderSkeleton('loading')}</div>`;
+    <h2 class="ibl-panel__page-title">Reports</h2>${renderSkeleton('loading')}</div>${adminMobileNav('admin/reports')}`;
   const res = await API.get('adminReports');
   const content = mc.querySelector('.ibl-panel__content');
   if (!res.success) { content.innerHTML = `<h2 class="ibl-panel__page-title">Reports</h2><p class="text-muted">${escapeHtml(res.message)}</p>`; return; }
