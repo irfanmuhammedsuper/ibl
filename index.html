@@ -224,7 +224,8 @@ display:flex;align-items:center;justify-content:center;border-radius:50%;backgro
 .ibl-shop-card{display:flex;flex-direction:column;border-radius:var(--radius-lg);overflow:hidden;
 background:var(--c-white);box-shadow:var(--shadow-sm);transition:all .25s;cursor:pointer}
 .ibl-shop-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
-.ibl-shop-card__img{height:160px;background-size:cover;background-position:center;position:relative}
+.ibl-shop-card__img{height:160px;position:relative;overflow:hidden;background:var(--c-surface)}
+.ibl-shop-card__img img{width:100%;height:100%;object-fit:cover;display:block}
 .ibl-shop-card__img .status-dot{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:var(--radius-full);
 font-size:.7rem;font-weight:700;display:flex;align-items:center;gap:4px}
 .ibl-shop-card__img .status-dot--open{background:rgba(22,163,74,0.9);color:#fff}
@@ -240,7 +241,9 @@ font-size:.7rem;font-weight:700;display:flex;align-items:center;gap:4px}
 .ibl-product-card{position:relative;border-radius:var(--radius-lg);overflow:hidden;background:var(--c-white);
 box-shadow:var(--shadow-sm);transition:all .3s;display:flex;flex-direction:column}
 .ibl-product-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
-.ibl-product-card__img{height:180px;background-size:cover;background-position:center;position:relative}
+.ibl-product-card__img{height:180px;position:relative;overflow:hidden;background:var(--c-surface);cursor:pointer}
+.ibl-product-card__img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+.ibl-product-card:hover .ibl-product-card__img img{transform:scale(1.06)}
 .ibl-product-card__discount{position:absolute;top:10px;left:10px;padding:3px 8px;border-radius:var(--radius-sm);
 background:var(--c-danger);color:#fff;font-size:.7rem;font-weight:700}
 .ibl-product-card__wishlist{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;
@@ -298,7 +301,8 @@ border-radius:var(--radius-md) var(--radius-md) 0 0;border-bottom:1px solid var(
 .ibl-cart__group-header h3{font-size:1rem;flex:1}
 .ibl-cart__item{display:flex;gap:12px;padding:14px 16px;background:var(--c-white);border-bottom:1px solid var(--c-border);align-items:center}
 .ibl-cart__item:last-child{border-bottom:none;border-radius:0 0 var(--radius-md) var(--radius-md)}
-.ibl-cart__item-img{width:70px;height:70px;border-radius:var(--radius-sm);background-size:cover;background-position:center;flex-shrink:0}
+.ibl-cart__item-img{width:70px;height:70px;border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0;background:var(--c-surface)}
+.ibl-cart__item-img img{width:100%;height:100%;object-fit:cover;display:block}
 .ibl-cart__item-info{flex:1;min-width:0}
 .ibl-cart__item-info h4{font-size:.9rem;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ibl-cart__item-info .price{font-weight:700;color:var(--c-primary);font-size:.9rem}
@@ -432,18 +436,25 @@ animation:skeleton-shimmer 1.5s ease-in-out infinite;border-radius:var(--radius-
 @keyframes skeleton-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* LOADING OVERLAY */
-.ibl-loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.8);backdrop-filter:blur(4px);
+.ibl-loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.85);backdrop-filter:blur(4px);
 z-index:var(--z-loading);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
 .ibl-loading-overlay--active{display:flex}
 .ibl-loading-spinner{width:44px;height:44px;border:3px solid var(--c-border);border-top-color:var(--c-primary);
 border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* DELIVERY-STYLE SPINNER (used for registration / auth loading) */
-.ibl-delivery-spinner{position:relative;width:64px;height:64px;display:flex;align-items:center;justify-content:center}
-.ibl-delivery-spinner__ring{position:absolute;inset:0;border:3px solid var(--c-border);border-top-color:var(--c-primary);
-border-radius:50%;animation:spin .8s linear infinite}
-.ibl-delivery-spinner__icon{font-size:1.4rem;animation:float-pkg 1s ease-in-out infinite}
+/* DELIVERY-STYLE SPINNER (used everywhere instead of the generic ring spinner) */
+.ibl-delivery-spinner{position:relative;width:76px;height:76px;display:flex;align-items:center;justify-content:center}
+.ibl-delivery-spinner__ring{position:absolute;inset:0;border:3px dashed var(--c-border);border-radius:50%;animation:spin-slow 3s linear infinite}
+.ibl-delivery-spinner__scooter{font-size:2.1rem;animation:bob 0.9s ease-in-out infinite;position:relative;z-index:1}
+.ibl-delivery-spinner__scooter::after{content:'📦';position:absolute;top:-14px;right:-6px;font-size:.85rem;animation:float-pkg 1s ease-in-out infinite}
+@keyframes spin-slow{to{transform:rotate(360deg)}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}
+.ibl-delivery-spinner--sm{width:34px;height:34px}
+.ibl-delivery-spinner--sm .ibl-delivery-spinner__scooter{font-size:1.1rem}
+.ibl-delivery-spinner--sm .ibl-delivery-spinner__scooter::after{font-size:.5rem;top:-8px;right:-4px}
+.ibl-delivery-spinner--sm .ibl-delivery-spinner__ring{border-width:2px}
+.ibl-loading-caption{color:var(--c-muted);font-size:.9rem;font-weight:600;text-align:center}
 .ibl-auth-loading{display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px 0}
 .ibl-auth-loading--active{display:flex}
 .ibl-auth-loading p{color:var(--c-muted);font-size:.85rem}
@@ -615,8 +626,11 @@ border-radius:0 0 var(--radius-md) var(--radius-md);transition:width .3s}
 
 <!-- LOADING OVERLAY -->
 <div id="loading-overlay" class="ibl-loading-overlay">
-  <div class="ibl-loading-spinner"></div>
-  <p style="color:var(--c-muted);font-size:.9rem">Loading...</p>
+  <div class="ibl-delivery-spinner">
+    <div class="ibl-delivery-spinner__ring"></div>
+    <div class="ibl-delivery-spinner__scooter">🛵</div>
+  </div>
+  <p class="ibl-loading-caption" id="loading-overlay-caption">On the way...</p>
 </div>
 
 <!-- TOAST CONTAINER -->
@@ -634,7 +648,7 @@ border-radius:0 0 var(--radius-md) var(--radius-md);transition:width .3s}
   </div>
   <div class="ibl-auth__right">
     <h2>Local Shops.<br>Local Products.<br>Delivered.</h2>
-    <p style="margin-top:16px">Discover your neighbourhood marketplace. Buy local. Sell local.</p>
+    <p style="margin-top:16px">Discover your neighbourhood marketplace. Buy local. Sell local. Feel the love next door.</p>
     <div class="ibl-rider-anim" style="margin-top:40px;width:300px">
       <div class="ibl-rider-anim__shop"><i class="fas fa-store"></i><span>Shop</span></div>
       <div class="ibl-rider-anim__dest"><i class="fas fa-map-marker-alt"></i><span>You</span></div>
@@ -649,7 +663,7 @@ border-radius:0 0 var(--radius-md) var(--radius-md);transition:width .3s}
   <div class="ibl-location-modal__card">
     <i class="fas fa-map-marker-alt" style="font-size:2.5rem;color:var(--c-primary);margin-bottom:12px"></i>
     <h2>Where should we deliver?</h2>
-    <p>Set your location so we can show nearby shops and products.</p>
+    <p>Set your location so we can show the shops nearest to you.</p>
     <button class="ibl-btn ibl-btn--primary ibl-btn--full" onclick="requestGeoLocation()">
       <i class="fas fa-crosshairs"></i> Use my current location
     </button>
@@ -814,7 +828,7 @@ function clearSession() {
 
 async function restoreSession() {
   if (!STATE.token) return false;
-  showLoading();
+  showLoading('Signing you in...');
   const res = await API.call('me');
   hideLoading();
   if (res.success && res.data && res.data.user) {
@@ -826,14 +840,14 @@ async function restoreSession() {
   return false;
 }
 
-// Toggle a submit button between normal state and a spinner ("delivery style") loading state
+// Toggle a submit button between normal state and a delivery-style spinner loading state
 function setBtnLoading(btnId, loading, loadingText) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
   if (loading) {
     if (!btn.dataset.origHtml) btn.dataset.origHtml = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div> ' + (loadingText || 'Please wait...');
+    btn.innerHTML = '<div class="ibl-delivery-spinner ibl-delivery-spinner--sm"><div class="ibl-delivery-spinner__ring"></div><div class="ibl-delivery-spinner__scooter">🛵</div></div> ' + (loadingText || 'Please wait...');
   } else {
     btn.disabled = false;
     if (btn.dataset.origHtml) { btn.innerHTML = btn.dataset.origHtml; delete btn.dataset.origHtml; }
@@ -843,7 +857,7 @@ function setBtnLoading(btnId, loading, loadingText) {
 async function doLogin(email, password) {
   if (!email || !password) return showToast('Email and password are required.', 'error');
   setBtnLoading('login-submit-btn', true, 'Signing in...');
-  showLoading();
+  showLoading('Signing you in...');
   const res = await API.post('login', { email, password });
   hideLoading();
   setBtnLoading('login-submit-btn', false);
@@ -866,7 +880,7 @@ async function doRegister(data) {
   if (data.password.length < 6) return showToast('Password must be at least 6 characters.', 'error');
   if (data.password !== data.confirmPassword) return showToast('Passwords do not match.', 'error');
   setBtnLoading('register-submit-btn', true, 'Creating account...');
-  showLoading();
+  showLoading('Setting up your account...');
   const res = await API.post('register', { name: data.name, email: data.email, password: data.password, phone: data.phone, role: data.role || 'customer' });
   hideLoading();
   setBtnLoading('register-submit-btn', false);
@@ -917,7 +931,11 @@ function routeByRole() {
 }
 
 // ── UI HELPERS ──
-function showLoading() { document.getElementById('loading-overlay').classList.add('ibl-loading-overlay--active'); }
+function showLoading(caption) {
+  const cap = document.getElementById('loading-overlay-caption');
+  if (cap) cap.textContent = caption || 'On the way...';
+  document.getElementById('loading-overlay').classList.add('ibl-loading-overlay--active');
+}
 function hideLoading() { document.getElementById('loading-overlay').classList.remove('ibl-loading-overlay--active'); }
 
 function showToast(message, type = 'info') {
@@ -1025,8 +1043,29 @@ function getPlaceholderImg(text) {
 
 function imgError(el) { el.onerror = null; el.src = getPlaceholderImg(el.alt || 'P'); }
 
+// Real <img> element markup, always rendered immediately (no need to click through
+// to a detail page to see the picture). Using an actual <img> tag — rather than
+// embedding the URL inside a CSS background-image string — means the image loads
+// as soon as the card is painted, and any URL containing special characters no
+// longer risks silently breaking the surrounding inline style attribute.
+function productImgTag(url, alt, cls) {
+  const safeAlt = escapeHtml(alt || 'Product');
+  const safeUrl = url ? escapeHtml(url) : getPlaceholderImg(alt);
+  return `<img class="${cls || ''}" src="${safeUrl}" alt="${safeAlt}" loading="eager" decoding="async" onerror="imgError(this)">`;
+}
+
 function bgImg(url, fallbackText) {
   return url ? `background-image:url('${escapeHtml(url)}'),url('${getPlaceholderImg(fallbackText)}')` : `background-image:url('${getPlaceholderImg(fallbackText)}')`;
+}
+
+// ── DISTANCE HELPER (Haversine, km) ──
+function distanceKm(lat1, lng1, lat2, lng2) {
+  if ([lat1, lng1, lat2, lng2].some(v => v === null || v === undefined || v === '')) return null;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 // ── IMAGE UPLOAD UTILITY ──
@@ -1099,7 +1138,7 @@ async function processUploadFile(file, inputId) {
 
   try {
     // Show loading state
-    placeholder.innerHTML = '<div class="ibl-loading-spinner" style="width:28px;height:28px;border-width:2px"></div><div class="ibl-upload__text">Compressing...</div>';
+    placeholder.innerHTML = '<div class="ibl-delivery-spinner ibl-delivery-spinner--sm"><div class="ibl-delivery-spinner__ring"></div><div class="ibl-delivery-spinner__scooter">🛵</div></div><div class="ibl-upload__text">Compressing...</div>';
     placeholder.classList.remove('hidden');
     preview.classList.add('hidden');
 
@@ -1172,7 +1211,10 @@ function renderSkeleton(type) {
     for (let i = 0; i < 6; i++) html += `<div class="ibl-stat-card"><div class="ibl-skeleton" style="width:40px;height:40px;border-radius:8px"></div><div class="ibl-skeleton" style="height:24px;width:60%;margin-top:8px"></div><div class="ibl-skeleton" style="height:14px;width:40%;margin-top:6px"></div></div>`;
     return html + '</div>';
   }
-  return '<div style="padding:40px;text-align:center"><div class="ibl-loading-spinner" style="margin:0 auto"></div></div>';
+  return `<div style="padding:40px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div class="ibl-delivery-spinner"><div class="ibl-delivery-spinner__ring"></div><div class="ibl-delivery-spinner__scooter">🛵</div></div>
+    <p class="ibl-loading-caption">Fetching the good stuff...</p>
+  </div>`;
 }
 
 function emptyState(icon, title, desc, btnText, btnAction) {
@@ -1182,7 +1224,7 @@ function emptyState(icon, title, desc, btnText, btnAction) {
 // ── LOCATION ──
 function requestGeoLocation() {
   if (!navigator.geolocation) { showToast('Geolocation is not supported by your browser.', 'error'); return; }
-  showLoading();
+  showLoading('Finding you on the map...');
   navigator.geolocation.getCurrentPosition(
     pos => {
       hideLoading();
@@ -1462,9 +1504,9 @@ async function renderHomePage() {
   mc.innerHTML = `<div class="ibl-container">
     <section class="ibl-hero">
       <div class="ibl-hero__content">
-        <div class="ibl-hero__tag"><i class="fas fa-bolt"></i> Your neighbourhood marketplace</div>
+        <div class="ibl-hero__tag"><i class="fas fa-bolt"></i> Your street. Your shops. One tap away.</div>
         <h1>Discover <span>local shops</span> near you</h1>
-        <p>Buy local. Sell local. Get it delivered from shops in your neighbourhood — fresh, fast, and affordable.</p>
+        <p>Buy local. Sell local. Get it delivered from the shops right around the corner — fresh, fast, and full of neighbourhood love.</p>
         <div class="ibl-hero__actions">
           <button class="ibl-btn ibl-btn--primary ibl-btn--lg" onclick="navigateTo('#/explore')"><i class="fas fa-compass"></i> Explore Nearby</button>
           <button class="ibl-btn ibl-btn--secondary ibl-btn--lg" onclick="${STATE.user ? "navigateTo('#/merchant')" : "showAuthScreen('register');setTimeout(()=>switchRegTab('merchant'),100)"}"><i class="fas fa-store"></i> Start Selling</button>
@@ -1480,7 +1522,7 @@ async function renderHomePage() {
       </div>
     </section>
     <section class="ibl-categories" id="home-categories"><div class="ibl-section-header"><h2>Shop by Category</h2></div><div id="cat-scroll" class="ibl-categories__scroll">${renderSkeleton('cards')}</div></section>
-    <section class="mb-24" id="home-shops"><div class="ibl-section-header"><h2>Nearby Shops</h2><a onclick="navigateTo('#/explore')">View all →</a></div><div id="shops-grid">${renderSkeleton('shops')}</div></section>
+    <section class="mb-24" id="home-shops"><div class="ibl-section-header"><h2>Nearest to You</h2><a onclick="navigateTo('#/explore')">View all →</a></div><p class="text-muted" style="margin:-8px 0 14px;font-size:.85rem">The closest local shops, ranked by distance from your doorstep.</p><div id="shops-grid">${renderSkeleton('shops')}</div></section>
     <section class="mb-24" id="home-products"><div class="ibl-section-header"><h2>Popular Products</h2><a onclick="navigateTo('#/explore')">View all →</a></div><div id="products-grid">${renderSkeleton('products')}</div></section>
     <section class="mb-24" id="home-deals"><div class="ibl-section-header"><h2>Deals & Discounts</h2></div><div id="deals-grid">${renderSkeleton('products')}</div></section>
   </div>`;
@@ -1488,10 +1530,15 @@ async function renderHomePage() {
 }
 
 async function loadHomeData() {
-  const locP = STATE.location ? { lat: STATE.location.lat, lng: STATE.location.lng } : {};
+  const hasLoc = !!(STATE.location && STATE.location.lat);
+  const locP = hasLoc ? { lat: STATE.location.lat, lng: STATE.location.lng } : {};
+  // NOTE: previously this requested `all: '1'`, which told the backend to ignore
+  // distance/radius filtering entirely and return every shop on the platform.
+  // We now request only shops within delivery radius of the set location, and
+  // additionally sort/limit to the nearest ones on the client as a safety net.
   const [catRes, shopRes, prodRes, dealRes] = await Promise.all([
     API.get('getCategories'),
-    API.get('getNearbyShops', { ...locP, all: '1' }),
+    API.get('getNearbyShops', { ...locP }),
     API.get('getProducts', { ...locP, pageSize: '8', sort: 'rating' }),
     API.get('getProducts', { ...locP, pageSize: '8', discount: '1', sort: 'price_low' })
   ]);
@@ -1506,8 +1553,18 @@ async function loadHomeData() {
   }
 
   if (shopRes.success) {
-    const shops = shopRes.data.shops.slice(0, 6);
-    document.getElementById('shops-grid').innerHTML = shops.length ? `<div class="ibl-shops-grid">${shops.map(renderShopCard).join('')}</div>` : emptyState('fa-store', 'No shops nearby', 'Set your location to discover local shops.', 'Set Location', 'showLocationModal()');
+    let shops = shopRes.data.shops || [];
+    if (hasLoc) {
+      // Compute/normalize distance client-side too, then keep only the nearest ones.
+      shops = shops.map(s => ({
+        ...s,
+        distanceKm: (s.distanceKm != null ? Number(s.distanceKm) : distanceKm(STATE.location.lat, STATE.location.lng, s.latitude ?? s.Latitude, s.longitude ?? s.Longitude))
+      }));
+      shops = shops.filter(s => s.distanceKm == null || s.distanceKm <= 10);
+      shops.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999));
+    }
+    shops = shops.slice(0, 6);
+    document.getElementById('shops-grid').innerHTML = shops.length ? `<div class="ibl-shops-grid">${shops.map(renderShopCard).join('')}</div>` : emptyState('fa-store', hasLoc ? 'No shops near you yet' : 'Set your location', hasLoc ? 'No local shops are open within delivery range of your address right now.' : 'Set your location so we can show only the shops nearest to you.', 'Set Location', 'showLocationModal()');
   }
 
   if (prodRes.success) {
@@ -1524,9 +1581,10 @@ async function loadHomeData() {
 function renderShopCard(s) {
   const isOpen = s.isOpen !== false && s.status === 'open';
   return `<div class="ibl-shop-card" onclick="navigateTo('#/shop?id=${s.shopId}')">
-    <div class="ibl-shop-card__img" style="${bgImg(s.image, s.shopName)}">
+    <div class="ibl-shop-card__img">
+      ${productImgTag(s.image, s.shopName)}
       <div class="status-dot ${isOpen ? 'status-dot--open' : 'status-dot--closed'}">
-        <span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>${isOpen ? 'Open' : 'Closed'}
+        <span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>${isOpen ? 'Open Now' : 'Closed'}
       </div>
     </div>
     <div class="ibl-shop-card__body">
@@ -1534,7 +1592,7 @@ function renderShopCard(s) {
       <div class="ibl-shop-card__name">${escapeHtml(s.shopName)}</div>
       <div class="ibl-shop-card__meta">
         <span><i class="fas fa-star" style="color:#F59E0B"></i> ${s.rating || '—'}</span>
-        ${s.distanceKm != null ? `<span><i class="fas fa-map-marker-alt"></i> ${s.distanceKm} km</span>` : ''}
+        ${s.distanceKm != null ? `<span><i class="fas fa-location-arrow"></i> ${Number(s.distanceKm).toFixed(1)} km away</span>` : ''}
         <span><i class="fas fa-motorcycle"></i> ${formatPrice(s.deliveryFee)}</span>
         ${s.minOrder ? `<span>Min ${formatPrice(s.minOrder)}</span>` : ''}
       </div>
@@ -1548,7 +1606,8 @@ function renderProductCard(p) {
   const disc = getDiscountPct(origPrice, Number(p.DiscountPrice));
   const inWish = STATE.wishlistIds.has(p.ProductID);
   return `<div class="ibl-product-card">
-    <div class="ibl-product-card__img" style="${bgImg(p.Image, p.Name)}" onclick="navigateTo('#/product?id=${p.ProductID}')">
+    <div class="ibl-product-card__img" onclick="navigateTo('#/product?id=${p.ProductID}')">
+      ${productImgTag(p.Image, p.Name)}
       ${disc > 0 ? `<div class="ibl-product-card__discount">${disc}% OFF</div>` : ''}
       <div class="ibl-product-card__wishlist ${inWish ? 'ibl-product-card__wishlist--active' : ''}" onclick="event.stopPropagation();toggleWishlist('${p.ProductID}',this)">
         <i class="${inWish ? 'fas' : 'far'} fa-heart"></i>
@@ -1758,7 +1817,7 @@ async function renderProductPage(productId) {
         </div>
         ${shop ? `<div class="ibl-card--flat" style="padding:14px;margin-top:16px;border-radius:var(--radius-md);cursor:pointer" onclick="navigateTo('#/shop?id=${shop.ShopID}')">
           <div class="flex items-center gap-12">
-            <div style="width:44px;height:44px;border-radius:var(--radius-sm);${bgImg(shop.ShopImage, shop.ShopName)};background-size:cover"></div>
+            <div style="width:44px;height:44px;border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0">${productImgTag(shop.ShopImage, shop.ShopName)}</div>
             <div><div style="font-weight:600">${escapeHtml(shop.ShopName)}</div><div class="text-muted" style="font-size:.8rem">${escapeHtml(shop.Address || '')}</div></div>
           </div>
         </div>` : ''}
@@ -1807,7 +1866,7 @@ async function addToCartQuick(productId, evt) {
   if (!requireLogin()) return;
   const btn = evt && evt.target ? evt.target.closest('button') : null;
   let origHtml = null;
-  if (btn) { origHtml = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>'; }
+  if (btn) { origHtml = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<div class="ibl-delivery-spinner ibl-delivery-spinner--sm"><div class="ibl-delivery-spinner__ring"></div><div class="ibl-delivery-spinner__scooter">🛵</div></div>'; }
   const res = await API.post('addToCart', { productId, quantity: 1 });
   if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
   if (res.success) {
@@ -1857,7 +1916,7 @@ async function renderCartPage() {
       <span class="text-muted" style="font-size:.8rem">Delivery: ${formatPrice(g.deliveryFee)}${g.minOrder ? ' · Min ' + formatPrice(g.minOrder) : ''}</span></div>`;
     g.items.forEach(it => {
       itemsHtml += `<div class="ibl-cart__item">
-        <div class="ibl-cart__item-img" style="${bgImg(it.image, it.name)}"></div>
+        <div class="ibl-cart__item-img">${productImgTag(it.image, it.name)}</div>
         <div class="ibl-cart__item-info">
           <h4>${escapeHtml(it.name)}</h4>
           <div class="price">${formatPrice(it.price)} × ${it.quantity} = ${formatPrice(it.lineTotal)}</div>
@@ -1996,7 +2055,7 @@ async function renderCheckoutReview() {
       <div style="font-weight:700;margin-bottom:8px"><i class="fas fa-store" style="color:var(--c-primary)"></i> ${escapeHtml(g.shopName)}</div>`;
     g.items.forEach(it => {
       html += `<div class="flex items-center gap-8 mb-8" style="font-size:.85rem">
-        <div style="width:40px;height:40px;border-radius:6px;${bgImg(it.image, it.name)};background-size:cover;flex-shrink:0"></div>
+        <div style="width:40px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0">${productImgTag(it.image, it.name)}</div>
         <div class="flex-1">${escapeHtml(it.name)} × ${it.quantity}</div>
         <div style="font-weight:600">${formatPrice(it.lineTotal)}</div>
       </div>`;
@@ -2083,12 +2142,14 @@ async function placeOrder() {
   if (!STATE.checkoutAddress) { showToast('Please select a delivery address first.', 'error'); goCheckoutStep(1); return; }
   const btn = document.getElementById('place-order-btn');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Placing...';
+  btn.innerHTML = '<div class="ibl-delivery-spinner ibl-delivery-spinner--sm"><div class="ibl-delivery-spinner__ring"></div><div class="ibl-delivery-spinner__scooter">🛵</div></div> Placing...';
+  showLoading('Sending your order to the shop...');
   const res = await API.post('createOrder', {
     deliveryAddress: JSON.stringify(STATE.checkoutAddress),
     paymentMethod: document.getElementById('payment-method').value,
     couponCode: STATE.checkoutCoupon ? STATE.checkoutCoupon.code : ''
   });
+  hideLoading();
   if (res.success) {
     STATE.cart = { groups: [], subtotal: 0 };
     STATE.cartCount = 0;
@@ -2168,7 +2229,7 @@ function renderOrderCard(o) {
 
 async function cancelOrderAction(orderId) {
   if (!confirm('Cancel this order?')) return;
-  showLoading();
+  showLoading('Cancelling your order...');
   const res = await API.post('cancelOrder', { orderId });
   hideLoading();
   if (res.success) { showToast('Order cancelled.', 'info'); renderOrdersPage(); }
@@ -2377,7 +2438,7 @@ async function saveAddress() {
   };
   if (!data.fullAddress || !data.city || !data.pincode) { showToast('Full address, city and pincode are required.', 'error'); return; }
   setBtnLoading('save-address-btn', true, 'Saving...');
-  showLoading();
+  showLoading('Saving your address...');
   const res = await API.post('addAddress', data);
   hideLoading();
   setBtnLoading('save-address-btn', false);
@@ -2478,7 +2539,7 @@ async function renderMerchantDashboard() {
       ${statCard('fa-exclamation-triangle', 'warning', s.lowStock, 'Low Stock')}
       ${statCard('fa-ban', 'danger', s.outOfStock, 'Out of Stock')}
     </div>
-    <div class="ibl-section-header"><h2>Recent Orders</h2><a onclick="navigateTo('#/merchant/orders')">View all →</a></div>
+    <div class="ibl-section-header"><h2>Recent Orders</h2></div>
     ${orders.length ? `<div class="ibl-table-wrap"><table class="ibl-table"><thead><tr>
       <th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th>
     </tr></thead><tbody>${orders.map(o => `<tr>
@@ -2534,7 +2595,7 @@ function renderMerchantOrdersTable(orders) {
 }
 
 async function showMerchantOrderDetail(orderId) {
-  showLoading();
+  showLoading('Loading order details...');
   const res = await API.get('getOrder', { orderId });
   hideLoading();
   if (!res.success) { showToast(res.message, 'error'); return; }
@@ -2571,7 +2632,7 @@ function getNextStatuses(current) {
 }
 
 async function updateMerchantOrderStatus(orderId, status) {
-  showLoading();
+  showLoading('Updating order status...');
   const res = await API.post('updateOrderStatus', { orderId, status });
   hideLoading();
   if (res.success) { showToast('Status updated!', 'success'); closeModal(); renderMerchantOrders(); }
@@ -2604,7 +2665,7 @@ async function renderMerchantProducts() {
   </tr></thead><tbody>${prods.map(p => {
     const isActive = p.Active === true || p.Active === 'TRUE' || p.Active === 'true';
     return `<tr>
-      <td><div style="width:44px;height:44px;border-radius:6px;${bgImg(p.Image, p.Name)};background-size:cover"></div></td>
+      <td><div style="width:44px;height:44px;border-radius:6px;overflow:hidden">${productImgTag(p.Image, p.Name)}</div></td>
       <td style="font-weight:600;max-width:180px" class="truncate">${escapeHtml(p.Name)}</td>
       <td>${escapeHtml(p.Category)}</td>
       <td>${formatPrice(p.Price)}</td>
@@ -2655,7 +2716,7 @@ async function saveNewProduct() {
   const data = getProductFormData();
   if (!data.name || !data.price) { showToast('Name and price are required.', 'error'); return; }
   setBtnLoading('save-product-btn', true, 'Saving...');
-  showLoading();
+  showLoading('Adding product to your shop...');
   const res = await API.post('addProduct', data);
   hideLoading();
   setBtnLoading('save-product-btn', false);
@@ -2664,7 +2725,7 @@ async function saveNewProduct() {
 }
 
 async function showEditProductModal(productId) {
-  showLoading();
+  showLoading('Loading product...');
   const res = await API.get('getProduct', { productId });
   hideLoading();
   if (!res.success) { showToast('Product not found.', 'error'); return; }
@@ -2675,7 +2736,7 @@ async function saveEditProduct(productId) {
   const data = getProductFormData();
   data.productId = productId;
   setBtnLoading('save-product-btn', true, 'Saving...');
-  showLoading();
+  showLoading('Saving changes...');
   const res = await API.post('updateProduct', data);
   hideLoading();
   setBtnLoading('save-product-btn', false);
@@ -2808,7 +2869,7 @@ async function createShopAction() {
   const data = getShopFormData();
   if (!data.shopName || !data.latitude || !data.longitude) { showToast('Shop name and location are required.', 'error'); return; }
   setBtnLoading('save-shop-btn', true, 'Creating...');
-  showLoading();
+  showLoading('Setting up your shop...');
   const res = await API.post('createShop', data);
   hideLoading();
   setBtnLoading('save-shop-btn', false);
@@ -2825,7 +2886,7 @@ async function showEditShopModal() {
 async function saveShopEdit() {
   const data = getShopFormData();
   setBtnLoading('save-shop-btn', true, 'Saving...');
-  showLoading();
+  showLoading('Saving shop details...');
   const res = await API.post('updateShop', data);
   hideLoading();
   setBtnLoading('save-shop-btn', false);
@@ -2851,7 +2912,7 @@ function getShopFormData() {
 }
 
 async function toggleShopStatusAction() {
-  showLoading();
+  showLoading('Updating shop status...');
   const res = await API.post('toggleShopStatus');
   hideLoading();
   if (res.success) { showToast('Shop is now ' + res.data.status + '.', 'success'); renderMerchantShop(); }
@@ -3175,7 +3236,7 @@ async function addCouponAction() {
     expiryDate: document.getElementById('cpn-end').value
   };
   if (!data.code || !data.value) { showToast('Code and value are required.', 'error'); return; }
-  showLoading();
+  showLoading('Creating coupon...');
   const res = await API.post('adminManageCoupon', data);
   hideLoading();
   if (res.success) { showToast('Coupon created!', 'success'); closeModal(); renderAdminCoupons(); }
