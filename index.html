@@ -69,6 +69,7 @@ letter-spacing:0.01em;position:relative;overflow:hidden}
 .ibl-btn--icon{width:40px;height:40px;padding:0;border-radius:50%}
 .ibl-btn[disabled]{opacity:.5;pointer-events:none}
 .ibl-btn .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+.ibl-btn--secondary .spinner{border:2px solid rgba(255,122,0,.25);border-top-color:var(--c-primary)}
 
 /* CARDS */
 .ibl-card{background:var(--c-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
@@ -257,6 +258,7 @@ transition:all .2s;font-size:.9rem;color:var(--c-muted);backdrop-filter:blur(4px
 .ibl-product-card__add{width:100%;padding:8px;border-radius:var(--radius-sm);background:var(--c-primary);
 color:#fff;font-weight:600;font-size:.85rem;border:none;cursor:pointer;transition:background .2s}
 .ibl-product-card__add:hover{background:var(--c-primary-dark)}
+.ibl-product-card__add .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle}
 
 /* PRODUCT DETAIL */
 .ibl-product-detail{padding:24px 0}
@@ -436,6 +438,15 @@ z-index:var(--z-loading);display:none;align-items:center;justify-content:center;
 .ibl-loading-spinner{width:44px;height:44px;border:3px solid var(--c-border);border-top-color:var(--c-primary);
 border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* DELIVERY-STYLE SPINNER (used for registration / auth loading) */
+.ibl-delivery-spinner{position:relative;width:64px;height:64px;display:flex;align-items:center;justify-content:center}
+.ibl-delivery-spinner__ring{position:absolute;inset:0;border:3px solid var(--c-border);border-top-color:var(--c-primary);
+border-radius:50%;animation:spin .8s linear infinite}
+.ibl-delivery-spinner__icon{font-size:1.4rem;animation:float-pkg 1s ease-in-out infinite}
+.ibl-auth-loading{display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px 0}
+.ibl-auth-loading--active{display:flex}
+.ibl-auth-loading p{color:var(--c-muted);font-size:.85rem}
 
 /* EMPTY STATE */
 .ibl-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center}
@@ -753,6 +764,7 @@ const STATE = {
   refreshTimers: {},
   wishlistIds: new Set(),
   checkoutAddress: null,
+  checkoutAddresses: [],
   checkoutCoupon: null,
   checkoutStep: 1
 };
@@ -814,11 +826,27 @@ async function restoreSession() {
   return false;
 }
 
+// Toggle a submit button between normal state and a spinner ("delivery style") loading state
+function setBtnLoading(btnId, loading, loadingText) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  if (loading) {
+    if (!btn.dataset.origHtml) btn.dataset.origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> ' + (loadingText || 'Please wait...');
+  } else {
+    btn.disabled = false;
+    if (btn.dataset.origHtml) { btn.innerHTML = btn.dataset.origHtml; delete btn.dataset.origHtml; }
+  }
+}
+
 async function doLogin(email, password) {
   if (!email || !password) return showToast('Email and password are required.', 'error');
+  setBtnLoading('login-submit-btn', true, 'Signing in...');
   showLoading();
   const res = await API.post('login', { email, password });
   hideLoading();
+  setBtnLoading('login-submit-btn', false);
   if (res.success) {
     STATE.token = res.data.token;
     STATE.user = res.data.user;
@@ -837,9 +865,11 @@ async function doRegister(data) {
   if (!data.name || !data.email || !data.password || !data.phone) return showToast('All fields are required.', 'error');
   if (data.password.length < 6) return showToast('Password must be at least 6 characters.', 'error');
   if (data.password !== data.confirmPassword) return showToast('Passwords do not match.', 'error');
+  setBtnLoading('register-submit-btn', true, 'Creating account...');
   showLoading();
   const res = await API.post('register', { name: data.name, email: data.email, password: data.password, phone: data.phone, role: data.role || 'customer' });
   hideLoading();
+  setBtnLoading('register-submit-btn', false);
   if (res.success) {
     STATE.token = res.data.token;
     STATE.user = res.data.user;
@@ -1350,7 +1380,7 @@ function renderAuthContent(mode) {
         <div class="ibl-input-wrap"><i class="fas fa-lock"></i><input type="password" id="login-password" placeholder="Enter password">
         <div class="ibl-input-icon-right" onclick="togglePwdVisibility('login-password',this)"><i class="fas fa-eye"></i></div></div>
       </div>
-      <button class="ibl-btn ibl-btn--primary ibl-btn--full ibl-btn--lg mt-8" onclick="doLogin(document.getElementById('login-email').value,document.getElementById('login-password').value)">Sign In</button>
+      <button class="ibl-btn ibl-btn--primary ibl-btn--full ibl-btn--lg mt-8" id="login-submit-btn" onclick="doLogin(document.getElementById('login-email').value,document.getElementById('login-password').value)">Sign In</button>
       <div class="ibl-auth__footer mt-16">
         Don't have an account? <a onclick="renderAuthContent('register')">Create one</a>
       </div>
@@ -1390,7 +1420,7 @@ function renderAuthContent(mode) {
       <div id="merchant-reg-note" class="hidden" style="padding:12px;background:#FEF3C7;border-radius:var(--radius-sm);margin-bottom:16px;font-size:.85rem;color:#92400E">
         <i class="fas fa-info-circle"></i> Merchant accounts require admin approval before you can create a shop.
       </div>
-      <button class="ibl-btn ibl-btn--primary ibl-btn--full ibl-btn--lg" onclick="submitRegister()">Create Account</button>
+      <button class="ibl-btn ibl-btn--primary ibl-btn--full ibl-btn--lg" id="register-submit-btn" onclick="submitRegister()">Create Account</button>
       <div class="ibl-auth__footer mt-16">
         Already have an account? <a onclick="renderAuthContent('login')">Sign in</a>
       </div>`;
@@ -1534,7 +1564,7 @@ function renderProductCard(p) {
       </div>
     </div>
     <div style="padding:0 12px 12px">
-      <button class="ibl-product-card__add" onclick="event.stopPropagation();addToCartQuick('${p.ProductID}')"><i class="fas fa-plus"></i> Add</button>
+      <button class="ibl-product-card__add" onclick="addToCartQuick('${p.ProductID}', event)"><i class="fas fa-plus"></i> Add</button>
     </div>
   </div>`;
 }
@@ -1713,7 +1743,7 @@ async function renderProductPage(productId) {
             <span id="detail-qty">1</span>
             <button onclick="changeDetailQty(1)">+</button>
           </div>
-          <button class="ibl-btn ibl-btn--primary flex-1 ${!inStock ? 'disabled' : ''}" ${!inStock ? 'disabled' : ''} onclick="addToCartFromDetail('${p.ProductID}')">
+          <button class="ibl-btn ibl-btn--primary flex-1 ${!inStock ? 'disabled' : ''}" id="detail-add-btn" ${!inStock ? 'disabled' : ''} onclick="addToCartFromDetail('${p.ProductID}')">
             <i class="fas fa-shopping-bag"></i> ${inStock ? 'Add to Cart' : 'Out of Stock'}
           </button>
           <button class="ibl-btn ${inWish ? 'ibl-btn--danger' : 'ibl-btn--secondary'} ibl-btn--icon" onclick="toggleWishlist('${p.ProductID}',null);this.classList.toggle('ibl-btn--danger');this.classList.toggle('ibl-btn--secondary')">
@@ -1760,9 +1790,9 @@ function changeDetailQty(delta) {
 async function addToCartFromDetail(productId) {
   if (!requireLogin()) return;
   const qty = parseInt(document.getElementById('detail-qty')?.textContent || '1');
-  showLoading();
+  setBtnLoading('detail-add-btn', true, 'Adding...');
   const res = await API.post('addToCart', { productId, quantity: qty });
-  hideLoading();
+  setBtnLoading('detail-add-btn', false);
   if (res.success) {
     STATE.cart = res.data.cart;
     STATE.cartCount = STATE.cart.groups.reduce((s, g) => s + g.items.length, 0);
@@ -1773,9 +1803,13 @@ async function addToCartFromDetail(productId) {
   }
 }
 
-async function addToCartQuick(productId) {
+async function addToCartQuick(productId, evt) {
   if (!requireLogin()) return;
+  const btn = evt && evt.target ? evt.target.closest('button') : null;
+  let origHtml = null;
+  if (btn) { origHtml = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>'; }
   const res = await API.post('addToCart', { productId, quantity: 1 });
+  if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
   if (res.success) {
     STATE.cart = res.data.cart;
     STATE.cartCount = STATE.cart.groups.reduce((s, g) => s + g.items.length, 0);
@@ -1905,18 +1939,25 @@ async function renderCheckoutPage() {
   else renderCheckoutPayment();
 }
 
+// FIX: addresses are now kept in STATE.checkoutAddresses and referenced by array index
+// instead of being JSON-embedded inside the onclick attribute. The previous approach
+// (JSON.stringify(JSON.stringify(a)) run through escapeHtml, which does NOT escape
+// quote characters) produced malformed HTML attributes whenever an address contained
+// a double quote from JSON.stringify, silently breaking address selection — which in
+// turn permanently disabled the "Continue" button and blocked checkout/payment.
 async function renderCheckoutAddress() {
   const el = document.getElementById('checkout-content');
   el.innerHTML = renderSkeleton('loading');
   const res = await API.get('getAddresses');
   const addresses = res.success ? res.data.addresses : [];
+  STATE.checkoutAddresses = addresses;
 
   let html = '<h3 style="margin-bottom:16px">Select Delivery Address</h3>';
   if (addresses.length) {
     html += '<div class="grid-2">';
-    addresses.forEach(a => {
+    addresses.forEach((a, idx) => {
       const sel = STATE.checkoutAddress && STATE.checkoutAddress.AddressID === a.AddressID;
-      html += `<div class="ibl-address-card ${sel ? 'ibl-address-card--selected' : ''}" onclick="selectCheckoutAddress(${escapeHtml(JSON.stringify(JSON.stringify(a)))})">
+      html += `<div class="ibl-address-card ${sel ? 'ibl-address-card--selected' : ''}" onclick="selectCheckoutAddressByIndex(${idx})">
         <div class="ibl-address-card__label"><i class="fas fa-map-pin"></i> ${escapeHtml(a.Label)}</div>
         <div class="ibl-address-card__text">${escapeHtml(a.FullAddress)}</div>
         <div class="ibl-address-card__meta">${[a.Area, a.City, a.Pincode].filter(Boolean).join(', ')}</div>
@@ -1929,8 +1970,10 @@ async function renderCheckoutAddress() {
   el.innerHTML = html;
 }
 
-function selectCheckoutAddress(jsonStr) {
-  STATE.checkoutAddress = JSON.parse(jsonStr);
+function selectCheckoutAddressByIndex(idx) {
+  const a = STATE.checkoutAddresses[idx];
+  if (!a) return;
+  STATE.checkoutAddress = a;
   renderCheckoutAddress();
 }
 
@@ -1964,7 +2007,7 @@ async function renderCheckoutReview() {
   html += `<div class="ibl-card--flat" style="padding:14px;border-radius:var(--radius-md);margin-top:16px">
     <div class="flex gap-8 items-center">
       <input type="text" id="coupon-input" placeholder="Coupon code" style="flex:1">
-      <button class="ibl-btn ibl-btn--secondary ibl-btn--sm" onclick="applyCoupon()">Apply</button>
+      <button class="ibl-btn ibl-btn--secondary ibl-btn--sm" id="apply-coupon-btn" onclick="applyCoupon()">Apply</button>
     </div>
     <div id="coupon-result" class="mt-8"></div>
   </div>`;
@@ -1980,7 +2023,9 @@ async function renderCheckoutReview() {
 async function applyCoupon() {
   const code = document.getElementById('coupon-input').value.trim();
   if (!code) return;
+  setBtnLoading('apply-coupon-btn', true, 'Checking...');
   const res = await API.post('validateCoupon', { code, subtotal: STATE.cart.subtotal });
+  setBtnLoading('apply-coupon-btn', false);
   const el = document.getElementById('coupon-result');
   if (res.success) {
     STATE.checkoutCoupon = res.data;
@@ -2035,6 +2080,7 @@ function selectPayment(method) {
 }
 
 async function placeOrder() {
+  if (!STATE.checkoutAddress) { showToast('Please select a delivery address first.', 'error'); goCheckoutStep(1); return; }
   const btn = document.getElementById('place-order-btn');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Placing...';
@@ -2048,6 +2094,7 @@ async function placeOrder() {
     STATE.cartCount = 0;
     STATE.checkoutStep = 1;
     STATE.checkoutAddress = null;
+    STATE.checkoutAddresses = [];
     STATE.checkoutCoupon = null;
     updateCartBadge();
     STATE.pageParams.orderIds = res.data.orderIds.join(',');
@@ -2112,7 +2159,7 @@ function renderOrderCard(o) {
       <div class="ibl-order-card__total">Total: ${formatPrice(o.Total)}</div>
       <div class="flex gap-8">
         ${canCancel ? `<button class="ibl-btn ibl-btn--ghost ibl-btn--sm" onclick="cancelOrderAction('${o.OrderID}')">Cancel</button>` : ''}
-        ${canReview ? `<button class="ibl-btn ibl-btn--ghost ibl-btn--sm" onclick="showReviewModal('${o.OrderID}', '${items.length ? items[0].ProductID : ''}')"><i class="fas fa-star"></i> Review</button>` : ''}
+        ${canReview ? `<button class="ibl-btn ibl-btn--ghost ibl-btn--sm" onclick='showReviewModal(${JSON.stringify(o.OrderID)}, ${JSON.stringify(items.length ? items[0].ProductID : '')})'><i class="fas fa-star"></i> Review</button>` : ''}
         <button class="ibl-btn ibl-btn--primary ibl-btn--sm" onclick="navigateTo('#/track?id=${o.OrderID}')"><i class="fas fa-map-marker-alt"></i> Track</button>
       </div>
     </div>
@@ -2213,7 +2260,7 @@ function showReviewModal(orderId, productId) {
       ${[1,2,3,4,5].map(i => `<i class="fas fa-star active" data-val="${i}" onclick="setReviewStar(${i})"></i>`).join('')}
     </div>
     <div class="ibl-form-group"><label>Comment (optional)</label><textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea></div>
-    <button class="ibl-btn ibl-btn--primary ibl-btn--full" onclick="submitReview('${orderId}','${productId}')">Submit Review</button>`);
+    <button class="ibl-btn ibl-btn--primary ibl-btn--full" id="submit-review-btn" onclick='submitReview(${JSON.stringify(orderId)}, ${JSON.stringify(productId)})'>Submit Review</button>`);
 }
 
 function setReviewStar(val) {
@@ -2226,11 +2273,10 @@ function setReviewStar(val) {
 async function submitReview(orderId, productId) {
   const rating = document.getElementById('review-stars').dataset.rating;
   const comment = document.getElementById('review-comment').value;
-  showLoading();
+  setBtnLoading('submit-review-btn', true, 'Submitting...');
   const res = await API.post('addReview', { orderId, productId, rating, comment });
-  hideLoading();
-  closeModal();
-  if (res.success) showToast('Review submitted! Thank you!', 'success');
+  setBtnLoading('submit-review-btn', false);
+  if (res.success) { closeModal(); showToast('Review submitted! Thank you!', 'success'); }
   else showToast(res.message, 'error');
 }
 
@@ -2315,7 +2361,7 @@ function showAddAddressModal() {
       <div class="ibl-form-group"><label>City</label><input id="addr-city" placeholder="City" value="${STATE.location ? escapeHtml(STATE.location.label.split(',').pop().trim()) : ''}"></div>
       <div class="ibl-form-group"><label>Pincode</label><input id="addr-pincode" placeholder="6-digit pincode"></div>
     </div>
-    <button class="ibl-btn ibl-btn--primary ibl-btn--full mt-8" onclick="saveAddress()">Save Address</button>`);
+    <button class="ibl-btn ibl-btn--primary ibl-btn--full mt-8" id="save-address-btn" onclick="saveAddress()">Save Address</button>`);
 }
 
 async function saveAddress() {
@@ -2330,9 +2376,11 @@ async function saveAddress() {
     longitude: STATE.location ? STATE.location.lng : ''
   };
   if (!data.fullAddress || !data.city || !data.pincode) { showToast('Full address, city and pincode are required.', 'error'); return; }
+  setBtnLoading('save-address-btn', true, 'Saving...');
   showLoading();
   const res = await API.post('addAddress', data);
   hideLoading();
+  setBtnLoading('save-address-btn', false);
   closeModal();
   if (res.success) { showToast('Address saved!', 'success'); if (STATE.currentPage === 'addresses') renderAddressesPage(); else if (STATE.currentPage === 'checkout') renderCheckoutAddress(); }
   else showToast(res.message, 'error');
@@ -2600,15 +2648,17 @@ function productFormHtml(p) {
     ${imageUploadHtml('pf-image', p.Image)}
     <div class="ibl-form-group"><label>Tags</label><input id="pf-tags" value="${escapeHtml(p.Tags || '')}" placeholder="comma separated"></div>
     <div class="ibl-form-group"><label>Subcategory</label><input id="pf-subcat" value="${escapeHtml(p.Subcategory || '')}"></div>
-    <button class="ibl-btn ibl-btn--primary ibl-btn--full mt-8" onclick="${p.ProductID ? `saveEditProduct('${p.ProductID}')` : 'saveNewProduct()'}">${p.ProductID ? 'Save Changes' : 'Add Product'}</button>`;
+    <button class="ibl-btn ibl-btn--primary ibl-btn--full mt-8" id="save-product-btn" onclick="${p.ProductID ? `saveEditProduct('${p.ProductID}')` : 'saveNewProduct()'}">${p.ProductID ? 'Save Changes' : 'Add Product'}</button>`;
 }
 
 async function saveNewProduct() {
   const data = getProductFormData();
   if (!data.name || !data.price) { showToast('Name and price are required.', 'error'); return; }
+  setBtnLoading('save-product-btn', true, 'Saving...');
   showLoading();
   const res = await API.post('addProduct', data);
   hideLoading();
+  setBtnLoading('save-product-btn', false);
   if (res.success) { showToast('Product added!', 'success'); closeModal(); renderMerchantProducts(); }
   else showToast(res.message, 'error');
 }
@@ -2624,9 +2674,11 @@ async function showEditProductModal(productId) {
 async function saveEditProduct(productId) {
   const data = getProductFormData();
   data.productId = productId;
+  setBtnLoading('save-product-btn', true, 'Saving...');
   showLoading();
   const res = await API.post('updateProduct', data);
   hideLoading();
+  setBtnLoading('save-product-btn', false);
   if (res.success) { showToast('Product updated!', 'success'); closeModal(); renderMerchantProducts(); }
   else showToast(res.message, 'error');
 }
@@ -2738,7 +2790,7 @@ function shopFormHtml(s) {
       <div></div>
     </div>
     ${imageUploadHtml('sf-image', s.ShopImage)}
-    <button class="ibl-btn ibl-btn--primary ibl-btn--full mt-8" onclick="${isEdit ? 'saveShopEdit()' : 'createShopAction()'}">
+    <button class="ibl-btn ibl-btn--primary ibl-btn--full mt-8" id="save-shop-btn" onclick="${isEdit ? 'saveShopEdit()' : 'createShopAction()'}">
       ${isEdit ? 'Save Changes' : 'Create Shop'}</button>
   </div>`;
 }
@@ -2755,9 +2807,11 @@ function getShopLocation() {
 async function createShopAction() {
   const data = getShopFormData();
   if (!data.shopName || !data.latitude || !data.longitude) { showToast('Shop name and location are required.', 'error'); return; }
+  setBtnLoading('save-shop-btn', true, 'Creating...');
   showLoading();
   const res = await API.post('createShop', data);
   hideLoading();
+  setBtnLoading('save-shop-btn', false);
   if (res.success) { showToast('Shop created!', 'success'); renderMerchantShop(); }
   else showToast(res.message, 'error');
 }
@@ -2770,9 +2824,11 @@ async function showEditShopModal() {
 
 async function saveShopEdit() {
   const data = getShopFormData();
+  setBtnLoading('save-shop-btn', true, 'Saving...');
   showLoading();
   const res = await API.post('updateShop', data);
   hideLoading();
+  setBtnLoading('save-shop-btn', false);
   if (res.success) { showToast('Shop updated!', 'success'); closeModal(); renderMerchantShop(); }
   else showToast(res.message, 'error');
 }
